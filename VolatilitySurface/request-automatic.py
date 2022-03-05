@@ -1,4 +1,3 @@
-from ast import arg
 from sys import argv
 from matplotlib import ticker
 import requests
@@ -39,7 +38,7 @@ def main(ticker):
         all_exp[dates_human[i]] = pd.read_json(requests.get('http://query1.finance.yahoo.com/v7/finance/options/' + ticker + '?date=' + str(exp_date), headers = headers).content.decode())
 
 
-    # Convert the format from Dictionaties to Pandas Dataframe
+    # Convert the format from Dictionaries to Pandas Dataframes
     # Each Chain can now be accessed by quering 'YY-MM-DD' Expiration date in the Dictionary
 
     for each in all_exp:
@@ -65,4 +64,14 @@ def main(ticker):
 
 
 if __name__ == '__main__':
+
+    # Automation : In case they notice patterns...
+    # Option 1 : Make n requests per day at set times
+    # Option 2 : Make n requests per dat at set times +- some small epsilon
+    # Option 3 : Make n requests per day at randomized times??
+
+
     main(argv[1])
+
+
+
