@@ -14,6 +14,7 @@ import compute_greeks
 
 # User-defined functions for Series Applications
 
+
 def getGreeks(greek, type, strike, underlyingPx, iv, rho, t):
     
     t = t/365

@@ -3,6 +3,8 @@ import numpy as np
 
 # Black-Scholes
 
+# Add comments
+
 def d1(S, K, sigma, r, T):
     return (np.log(S / K) + (r + sigma*sigma / 2)*T) / sigma * np.sqrt(T)
 
@@ -10,7 +12,6 @@ def d2(S, K, sigma, r, T):
     return (np.log(S / K) + (r - sigma*sigma / 2)*T) / sigma * np.sqrt(T)
 
 # TTE is taken as % of the year (Assumed to be 365 for this project)
-
 
 class Call:
 
