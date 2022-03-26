@@ -1,63 +1,87 @@
-import os
 import telebot
-import yfinance as yf
+from telebot import types
 
-API_KEY = os.getenv('API_KEY')
-bot = telebot.TeleBot(API_KEY)
+from KEYS import API_TOKEN
 
-@bot.message_handler(commands=['Greet'])
-def greet(message):
-  bot.reply_to(message, "Hey! Hows it going?")
+bot = telebot.TeleBot(API_TOKEN)
 
+
+# Bot's logic
+
+# BOT INTRO on Greeting
+
+# STEP 0: Get Underlying from the user
+
+# OPTION 1
+# Summary Functionality
+# C or P / C & P Highest Daily Volume
+# C vs P Parity in % (Daily Volume)
+# C or P / C & P / Expiration Date Highest OI
+#  
+# 
+
+
+# OPTION 2
+# Plotting Functionality
+
+# {} <- Chosen by user
+
+# 1 => Volatility Smile ATM
+# {C or P} / {C vs. Put} * 
+# Period {3M / 6M / 1Y / 1Y6M / 2Y / Max}
+
+# 2 => Metrics
+# P / C / P vs.C
+# {Strike Range}
+# {Specific DOE} OR {3M / 6M / 1Y / 1Y6M / 2Y / Max}
+# Metric {Nominal Price / OI / Vol / IV / delta / gamma / vega / theta / rho}
+
+
+# Handles all text messages that contains the commands '/start' or '/help'.
+@bot.message_handler(commands=['start', 'help'])
+def handle_start_help(message):
+	bot.send_message(message.chat.id ,text = "Assalam Aleykum!")
+
+
+# Handles all text messages that match the regular expression
+@bot.message_handler(regexp="SOME_REGEXP")
+def handle_message(message):
+	pass
+
+# Handles all messages for which the lambda returns True
+@bot.message_handler(func=lambda message: message.document.mime_type == 'text/plain', content_types=['document'])
+def handle_text_doc(message):
+	pass
+
+# Which could also be defined as:
+def test_message(message):
+	return message.document.mime_type == 'text/plain'
+
+@bot.message_handler(func=test_message, content_types=['document'])
+def handle_text_doc(message):
+	pass
+
+# Handlers can be stacked to create a function which will be called if either message_handler is eligible
+# This handler will be called if the message starts with '/hello' OR is some emoji
 @bot.message_handler(commands=['hello'])
-def hello(message):
-  bot.send_message(message.chat.id, "Hello!")
+@bot.message_handler(func=lambda msg: msg.text.encode("utf-8") == SOME_FANCY_EMOJI)
+def send_something(message):
+    pass
 
-@bot.message_handler(commands=['wsb'])
-def get_stocks(message):
-  response = ""
-  stocks = ['gme', 'amc', 'nok']
-  stock_data = []
-  for stock in stocks:
-    data = yf.download(tickers=stock, period='2d', interval='1d')
-    data = data.reset_index()
-    response += f"-----{stock}-----\n"
-    stock_data.append([stock])
-    columns = ['stock']
-    for index, row in data.iterrows():
-      stock_position = len(stock_data) - 1
-      price = round(row['Close'], 2)
-      format_date = row['Date'].strftime('%m/%d')
-      response += f"{format_date}: {price}\n"
-      stock_data[stock_position].append(price)
-      columns.append(format_date)
-    print()
 
-  response = f"{columns[0] : <10}{columns[1] : ^10}{columns[2] : >10}\n"
-  for row in stock_data:
-    response += f"{row[0] : <10}{row[1] : ^10}{row[2] : >10}\n"
-  response += "\nStock Data"
-  print(response)
-  bot.send_message(message.chat.id, response)
 
-def stock_request(message):
-  request = message.text.split()
-  if len(request) < 2 or request[0].lower() not in "price":
-    return False
-  else:
-    return True
+# Custom Response Keyboard Layouts
 
-@bot.message_handler(func=stock_request)
-def send_price(message):
-  request = message.text.split()[1]
-  data = yf.download(tickers=request, period='5m', interval='1m')
-  if data.size > 0:
-    data = data.reset_index()
-    data["format_date"] = data['Datetime'].dt.strftime('%m/%d %I:%M %p')
-    data.set_index('format_date', inplace=True)
-    print(data.to_string())
-    bot.send_message(message.chat.id, data['Close'].to_string(header=False))
-  else:
-    bot.send_message(message.chat.id, "No data!?")
+# markup = types.ReplyKeyboardMarkup()
+# itembtna = types.KeyboardButton('')
+# itembtnv = types.KeyboardButton('v')
+# itembtnc = types.KeyboardButton('c')
+# itembtnd = types.KeyboardButton('d')
+# itembtne = types.KeyboardButton('e')
+# markup.row(itembtna, itembtnv)
+# markup.row(itembtnc, itembtnd, itembtne)
+# # tb.send_message(chat_id, "Choose one letter:", reply_markup=markup)
 
-bot.polling()
+
+# Infinite polling (Does not quit on errors)
+bot.infinity_polling()
