@@ -13,12 +13,11 @@ bot = telebot.TeleBot(API_TOKEN)
 # STEP 0: Get Underlying from the user
 
 # OPTION 1
-# Summary Functionality
+# Summary Statistics
 # C or P / C & P Highest Daily Volume
 # C vs P Parity in % (Daily Volume)
 # C or P / C & P / Expiration Date Highest OI
 #  
-# 
 
 
 # OPTION 2
@@ -35,6 +34,7 @@ bot = telebot.TeleBot(API_TOKEN)
 # {Strike Range}
 # {Specific DOE} OR {3M / 6M / 1Y / 1Y6M / 2Y / Max}
 # Metric {Nominal Price / OI / Vol / IV / delta / gamma / vega / theta / rho}
+
 
 
 # Handles all text messages that contains the commands '/start' or '/help'.
