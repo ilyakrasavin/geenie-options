@@ -17,7 +17,6 @@ bot = telebot.TeleBot(API_TOKEN)
 # C or P / C & P Highest Daily Volume
 # C vs P Parity in % (Daily Volume)
 # C or P / C & P / Expiration Date Highest OI
-#  
 
 
 # OPTION 2
