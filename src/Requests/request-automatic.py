@@ -130,6 +130,7 @@ def main(ticker):
 
         outname = req.headers['date'] + '.csv'
 
+        # Add a proper relative path
         outdir = '../../Data/' + ticker + '/' + str(each) + '/'
         if not os.path.exists(outdir):
             os.makedirs(outdir)

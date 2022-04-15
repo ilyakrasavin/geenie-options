@@ -1,3 +1,7 @@
+# Bot server / Python + API library
+
+
+from email import message
 import telebot
 from telebot import types
 
@@ -8,44 +12,81 @@ bot = telebot.TeleBot(API_TOKEN)
 
 # Bot's logic
 
-# BOT INTRO on Greeting
-
-# STEP 0: Get Underlying from the user
-
-# OPTION 1
-# Summary Statistics
-# C or P / C & P Highest Daily Volume
-# C vs P Parity in % (Daily Volume)
-# C or P / C & P / Expiration Date Highest OI
-
-
-# OPTION 2
-# Plotting Functionality
-
-# {} <- Chosen by user
-
-# 1 => Volatility Smile ATM
-# {C or P} / {C vs. Put} * 
-# Period {3M / 6M / 1Y / 1Y6M / 2Y / Max}
-
-# 2 => Metrics
-# P / C / P vs.C
-# {Strike Range}
-# {Specific DOE} OR {3M / 6M / 1Y / 1Y6M / 2Y / Max}
-# Metric {Nominal Price / OI / Vol / IV / delta / gamma / vega / theta / rho}
-
-
-
 # Handles all text messages that contains the commands '/start' or '/help'.
-@bot.message_handler(commands=['start', 'help'])
+@bot.message_handler(commands=['menu', 'help'])
 def handle_start_help(message):
 	bot.send_message(message.chat.id ,text = "Assalam Aleykum!")
+
+
+# "Menu" -> Plotting / Statistics
+
+# Menu defined
+markup = types.ReplyKeyboardMarkup()
+itembtna = types.KeyboardButton('Plotting')
+itembtnv = types.KeyboardButton('Statistics')
+itembtnc = types.KeyboardButton('Cancel')
+markup.row(itembtna, itembtnv)
+markup.row(itembtnc)
+
+
+
+@bot.message_handler(commands=['start'])
+def handle_menu_call(message):
+	reply = bot.send_message(message.chat.id, "What would you like to see?:", reply_markup = markup)
+	bot.register_next_step_handler(reply, markup_handler)
+
+# Prompt user to enter the ticker symbol	
+def getUnderlying(message):
+	bot.send_message(message.chat.id, "Enter the Ticker Symol preceded by #:")
+
+def plottingHandler(message):
+	getUnderlying(message)
+
+def statsHandler(message):
+	getUnderlying(message)
+
+def markup_handler(message):
+
+	if(message.text == 'Plotting'):
+		plottingHandler(message)
+
+	elif (message.text == 'Statistics'):
+		plottingHandler(message)
+
+
+
+# PLOTTING -> Get Underlying
+
+# -> Data (ATM) / DOE (1 curve)
+
+# -> Data (Strike Range) ()
+
+
+# Receive a ticker
+@bot.message_handler(func = lambda msg: '#' == msg.text[0])
+def getTicker(message):
+	bot.send_message(message.chat.id, 'KOK!')
+
+
+
+
+# STATISTICS -> Get Underlying
+# Most Traded table
+# Put/call parity
+# 
+
+
+
+# "About" -> Bot's Intro
+
 
 
 # Handles all text messages that match the regular expression
 @bot.message_handler(regexp="SOME_REGEXP")
 def handle_message(message):
 	pass
+
+
 
 # Handles all messages for which the lambda returns True
 @bot.message_handler(func=lambda message: message.document.mime_type == 'text/plain', content_types=['document'])
@@ -60,6 +101,8 @@ def test_message(message):
 def handle_text_doc(message):
 	pass
 
+
+
 # Handlers can be stacked to create a function which will be called if either message_handler is eligible
 # This handler will be called if the message starts with '/hello' OR is some emoji
 @bot.message_handler(commands=['hello'])
@@ -67,19 +110,6 @@ def handle_text_doc(message):
 def send_something(message):
     pass
 
-
-
-# Custom Response Keyboard Layouts
-
-# markup = types.ReplyKeyboardMarkup()
-# itembtna = types.KeyboardButton('')
-# itembtnv = types.KeyboardButton('v')
-# itembtnc = types.KeyboardButton('c')
-# itembtnd = types.KeyboardButton('d')
-# itembtne = types.KeyboardButton('e')
-# markup.row(itembtna, itembtnv)
-# markup.row(itembtnc, itembtnd, itembtne)
-# # tb.send_message(chat_id, "Choose one letter:", reply_markup=markup)
 
 
 # Infinite polling (Does not quit on errors)
