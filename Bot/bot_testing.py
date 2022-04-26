@@ -1,10 +1,12 @@
-
+# Telegram Bot API
 import telebot
 from telebot import types
 
+# Keyboard Markup Layouts
+from markup import * 
+
 from KEYS import API_TOKEN
 
-bot = telebot.TeleBot(API_TOKEN)
 
 
 # STORE THE PROGRAM STATE on EXECUTION:
@@ -39,77 +41,13 @@ class SessionState:
 
 
 
+# Initialize the bot and Session State
+bot = telebot.TeleBot(API_TOKEN)
+
 session = SessionState()
 session.__init__()
 
 
-
-# Bot's logic
-
-# Handles all text messages that contains the commands '/start' or '/help'.
-@bot.message_handler(commands=['menu', 'help'])
-def handle_start_help(message):
-	bot.send_message(message.chat.id ,text = "Assalam Aleykum!")
-
-
-# "Menu" -> Plotting / Statistics
-
-# Main Menu buttons
-markup = types.ReplyKeyboardMarkup()
-itembtna = types.KeyboardButton('Plotting')
-itembtnv = types.KeyboardButton('Statistics')
-itembtnc = types.KeyboardButton('Cancel')
-markup.row(itembtna, itembtnv)
-markup.row(itembtnc)
-
-# Plotting Menu Step 1:
-
-plot_markup1 = types.ReplyKeyboardMarkup()
-plotmenu_btn1 = types.KeyboardButton("DOE x ATM")
-plotmenu_btn2 = types.KeyboardButton("DOE x Strike Range")
-plotmenu_btn3 = types.KeyboardButton("Cancel")
-plot_markup1.row(plotmenu_btn1)
-plot_markup1.row(plotmenu_btn2)
-plot_markup1.row(plotmenu_btn3)
-
-
-# Plotting DOE Mode setting markup
-plot_doe_markup = types.ReplyKeyboardMarkup()
-doe_button1 = types.KeyboardButton("Exact")
-doe_button2 = types.KeyboardButton("Range")
-doe_button3 = types.KeyboardButton("Quarterly")
-doe_button4 = types.KeyboardButton("Weekly")
-doe_button5 = types.KeyboardButton("Cancel")
-plot_doe_markup.row(doe_button1, doe_button2)
-plot_doe_markup.row(doe_button3, doe_button4)
-plot_doe_markup.row(doe_button5)
-
-
-# Plotting DOE Metric setting Markup
-plot_metrics_markup = types.ReplyKeyboardMarkup()
-metric_button1 = types.KeyboardButton("Spot Px")
-metric_button2 = types.KeyboardButton("OI")
-metric_button3 = types.KeyboardButton("Volume")
-metric_button4 = types.KeyboardButton("IV")
-metric_button5 = types.KeyboardButton("Greeks")
-metric_button6 = types.KeyboardButton("Cancel")
-
-plot_metrics_markup.row(metric_button1, metric_button2)
-plot_metrics_markup.row(metric_button3, metric_button4)
-plot_metrics_markup.row(metric_button5)
-plot_metrics_markup.row(metric_button6)
-
-
-# Contract Type markup
-contractType_markup = types.ReplyKeyboardMarkup()
-typeButton1 = types.KeyboardButton("Call")
-typeButton2 = types.KeyboardButton("Put")
-typeButton3 = types.KeyboardButton("Call & Put")
-typeButton4 = types.KeyboardButton("Cancel")
-
-contractType_markup.row(typeButton1, typeButton2)
-contractType_markup.row(typeButton3)
-contractType_markup.row(typeButton4)
 
 
 @bot.message_handler(commands=['start'])
@@ -169,7 +107,7 @@ def plotMenu_handler(message):
 
 
 def plotMenu_lvl2_handler(message):
-	reply = bot.send_message(message.chat.id, "Select DOE", reply_markup = contractType_markup)
+	reply = bot.send_message(message.chat.id, "Select DOE", reply_markup = plot_doe_markup)
 	bot.register_next_step_handler(reply, plotMenu_DOEArgHandler)
 
 
@@ -213,10 +151,11 @@ def exactDOEhandler(message):
 	bot.send_message(message.chat.id, "Provide Exact DOE in YY-MM-DD format")
 
 def rangeDOEhandler(message):
-	yield
+	reply = bot.send_message(message.chat.id, "Please choose the range:", reply_markup = doe_range_markup)
+	bot.register_next_step_handler(reply, range2next)
 
 def otherDOEhandler(message):
-	yield 
+	plotMenu_MetricHandler(message)
 
 
 @bot.message_handler(func = lambda msg: msg.text[2] == '-' and session.isComplete == False)
@@ -226,18 +165,27 @@ def getExactDOE(message):
 	plotMenu_MetricHandler(message)
 
 
-
 def plotMenu_MetricHandler(message):
 	reply = bot.send_message(message.chat.id, "Plot:", reply_markup = plot_metrics_markup)
-	bot.register_next_step_handler(reply, result_handler)	
+	bot.register_next_step_handler(reply, result_handler)
 
+
+def range2next(message):
+	if(message.text == "Cancel"):
+		session.reset
+	else:
+		session.doe_args = message.text
+		plotMenu_MetricHandler(message)
+	
 
 def plotMenu_StrikeRangeHandler(message):
 	yield
 
 
 def result_handler(message):
-	yield
+	session.metric = message.text
+	# session.verify()
+	bot.send_message(message.chat.id, "Your plot is being produced:")
 
 
 # Receive a ticker when uninitialized
