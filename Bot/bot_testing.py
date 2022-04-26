@@ -1,4 +1,5 @@
 # Telegram Bot API
+
 import telebot
 from telebot import types
 
@@ -11,7 +12,7 @@ from KEYS import API_TOKEN
 
 # STORE THE PROGRAM STATE on EXECUTION:
 
-# Plotting Mode (0 - uninitialized / 1 - DOExATM / 2 - DOExStrikeRange / 4 - Statistics)
+# Plotting Mode (0 - uninitialized / 1 - DOExATM / 2 - DOExStrikeRange / 3 - Statistics)
 
 class SessionState:
 
@@ -32,9 +33,36 @@ class SessionState:
 
 
 	def verify(self):
-		if(self.sessionTicker != ""):
-			print("KOKKUSIKI")
-		
+
+		tickerCond = self.sessionTicker != 0
+		reqCond = self.requestMode != 0
+		typeCond = self.o_type != ""
+		doe_tCond = self.doe_type != ""
+		doe_aCond = self.doe_args != ""
+		metCond = self.metric != ""
+
+		atmCond = self.atm_px != 0
+		strRangeCond = self.strike_range != (0, 0)
+
+		if(self.requestMode == 1 and tickerCond and reqCond and typeCond
+								and doe_tCond and doe_aCond and metCond
+								and atmCond and (not strRangeCond)):
+			self.isComplete = True
+			return True
+
+		elif(self.requestMode == 2 and tickerCond and reqCond and typeCond
+								and doe_tCond and doe_aCond and metCond
+								and (not atmCond) and strRangeCond):
+
+			self.isComplete = True
+			return True
+
+		elif(self.requestMode == 3):
+			return False
+
+		else:
+			return False
+
 
 	def reset(self):
 		self.__init__()
@@ -172,7 +200,8 @@ def plotMenu_MetricHandler(message):
 
 def range2next(message):
 	if(message.text == "Cancel"):
-		session.reset
+		bot.send_message(message.chat.id, "Aborted")
+		session.reset()
 	else:
 		session.doe_args = message.text
 		plotMenu_MetricHandler(message)
@@ -183,9 +212,17 @@ def plotMenu_StrikeRangeHandler(message):
 
 
 def result_handler(message):
-	session.metric = message.text
-	# session.verify()
-	bot.send_message(message.chat.id, "Your plot is being produced:")
+
+	if(message.text == "Cancel"):
+		session.reset()
+
+	elif(message.text == "Greeks"):
+		greekHandler(message)
+
+	else:
+		session.metric = message.text
+		# session.verify()
+		bot.send_message(message.chat.id, "Your plot is being produced:")
 
 
 # Receive a ticker when uninitialized
@@ -201,6 +238,19 @@ def getTicker(message):
 
 
 
+def greekHandler(message):
+	reply = bot.send_message(message.chat.id, "Choose the Greek:", reply_markup = greekMarkup)
+	bot.register_next_step_handler(reply, greek2final)
+
+
+def greek2final(message):
+
+	if(message.text == "Cancel"):
+		bot.send_message(message.chat.id, "Aborted")
+
+	else:
+		session.metric = message.text
+		bot.send_message(message.chat.id, "Your plot is being produced:", reply_markup = None)
 
 
 # STATISTICS -> Get Underlying
