@@ -15,6 +15,21 @@ import compute_greeks
 # User-defined functions for Series Applications
 
 
+def getStrikes(ticker):
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+
+    ticker = ticker
+
+    req = requests.get('http://query1.finance.yahoo.com/v7/finance/options/' + ticker, headers = headers)
+
+    # Decode the response
+    dates = pd.read_json(req.content.decode())
+
+    return dates.optionChain[1][0]['strikes']
+
+
+
+
 def getGreeks(greek, type, strike, underlyingPx, iv, rho, t):
     
     t = t/365

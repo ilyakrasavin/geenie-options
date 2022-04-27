@@ -1,6 +1,7 @@
 /Data
-/Bot/KEYS.py
-Outline.md
+src/Bot/KEYS.py
 README.md
-outline.pages
+/Docs
 /Images
+/venv
+/src/Pricing/__pycache__

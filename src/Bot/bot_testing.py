@@ -3,12 +3,17 @@
 import telebot
 from telebot import types
 
-# Keyboard Markup Layouts
-from markup import * 
+import sys
 
+from markup import * 
 from KEYS import API_TOKEN
 
 
+sys.path.insert(0, '../Pricing')
+import plotting
+
+sys.path.insert(0, '../Requests')
+from request_automatic import getStrikes
 
 # STORE THE PROGRAM STATE on EXECUTION:
 
@@ -29,7 +34,9 @@ class SessionState:
 
 		# Specific Attributes
 		self.atm_px = 0
-		self.strike_range = (0, 0)
+		self.strike_range = {}
+
+		self.strikes_all = []
 
 
 	def verify(self):
@@ -42,7 +49,7 @@ class SessionState:
 		metCond = self.metric != ""
 
 		atmCond = self.atm_px != 0
-		strRangeCond = self.strike_range != (0, 0)
+		strRangeCond = self.strike_range['lower'] != self.strike_range['upper']
 
 		if(self.requestMode == 1 and tickerCond and reqCond and typeCond
 								and doe_tCond and doe_aCond and metCond
@@ -75,7 +82,13 @@ bot = telebot.TeleBot(API_TOKEN)
 session = SessionState()
 session.__init__()
 
+strikeRangeTuple = (0, 0)
+rangeCollection = False
 
+
+
+strikeRange = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+buttons = {}
 
 
 @bot.message_handler(commands=['start'])
@@ -139,6 +152,27 @@ def plotMenu_lvl2_handler(message):
 	bot.register_next_step_handler(reply, plotMenu_DOEArgHandler)
 
 
+
+
+def plotMenu_strikeRHandler(message):
+	reply = bot.send_message(message.chat.id, "Please select the LOWER Strike Price:", reply_markup = strikeRange)
+	bot.register_next_step_handler(reply, bottomStrikeHandler)
+
+
+def bottomStrikeHandler(message):
+	session.strike_range['lower'] = float(message.text)
+	upperStrike(message)
+
+def upperStrike(message):
+	reply = bot.send_message(message.chat.id, "Please select the UPPER Strike Price:", reply_markup = strikeRange)
+	bot.register_next_step_handler(reply, upperStrikeHandler)
+
+
+def upperStrikeHandler(message):
+	session.strike_range['upper'] = float(message.text)
+	plotMenu_lvl2_handler(message)
+
+
 def plotMenu_DOEHandler(message):
 	if(message.text == "DOE x ATM"):
 		session.requestMode = 1
@@ -146,11 +180,13 @@ def plotMenu_DOEHandler(message):
 
 	elif(message.text == "DOE x Strike Range"):
 		session.requestMode = 2
-		plotMenu_lvl2_handler(message)
+		plotMenu_strikeRHandler(message)
 
 	elif(message.text == "Cancel"):
 		session.reset()
 		bot.send_message(message.chat.id, "Aborted")
+
+
 
 
 def plotMenu_DOEArgHandler(message):
@@ -207,8 +243,10 @@ def range2next(message):
 		plotMenu_MetricHandler(message)
 	
 
-def plotMenu_StrikeRangeHandler(message):
-	yield
+
+
+def plotMenu_StrikeRangeHandler1(message):
+	bot.send_message(message.chat.id, message.text)
 
 
 def result_handler(message):
@@ -223,6 +261,10 @@ def result_handler(message):
 		session.metric = message.text
 		# session.verify()
 		bot.send_message(message.chat.id, "Your plot is being produced:")
+		session.reset()
+
+def kakasiki():
+	session.strikes_all = getStrikes(session.sessionTicker)
 
 
 # Receive a ticker when uninitialized
@@ -233,7 +275,14 @@ def getTicker(message):
 	# Initialize the session state	
 	session.sessionTicker = message.text[1:]
 
+	kakasiki()
+
+	for each in session.strikes_all:
+		buttons[each] = types.KeyboardButton(each)
+		strikeRange.row(buttons[each])
+
 	reply = bot.send_message(message.chat.id, "Select Contract Type:", reply_markup = contractType_markup)
+
 	bot.register_next_step_handler(reply, plotMenu_contractTypeHandler)
 
 
