@@ -7,7 +7,7 @@ from telebot import types
 # Main Menu buttons
 markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 itembtna = types.KeyboardButton('Plotting')
-itembtnv = types.KeyboardButton('Statistics')
+itembtnv = types.KeyboardButton('Statistics (In Dev.)')
 itembtnc = types.KeyboardButton('Cancel')
 markup.row(itembtna, itembtnv)
 markup.row(itembtnc)
@@ -80,7 +80,7 @@ doe_range_markup.row(range9)
 
 
 greekMarkup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-greek1 = types.KeyboardButton("Delta")
+greek1 = types.KeyboardButton("delta")
 greek2 = types.KeyboardButton("Gamma")
 greek3 = types.KeyboardButton("Vega")
 greek4 = types.KeyboardButton("Theta")

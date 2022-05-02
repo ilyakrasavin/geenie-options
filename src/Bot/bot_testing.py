@@ -1,5 +1,7 @@
 # Telegram Bot API
 
+from datetime import datetime
+import subprocess
 import telebot
 from telebot import types
 
@@ -9,15 +11,15 @@ from markup import *
 from KEYS import API_TOKEN
 
 
-sys.path.insert(0, '../Pricing')
-import plotting
+import matplotlib.pyplot as plt
+
 
 sys.path.insert(0, '../Requests')
 from request_automatic import getStrikes
 
 # STORE THE PROGRAM STATE on EXECUTION:
-
 # Plotting Mode (0 - uninitialized / 1 - DOExATM / 2 - DOExStrikeRange / 3 - Statistics)
+
 
 class SessionState:
 
@@ -41,34 +43,57 @@ class SessionState:
 
 	def verify(self):
 
-		tickerCond = self.sessionTicker != 0
-		reqCond = self.requestMode != 0
-		typeCond = self.o_type != ""
-		doe_tCond = self.doe_type != ""
-		doe_aCond = self.doe_args != ""
-		metCond = self.metric != ""
+		# tickerCond = self.sessionTicker != 0
+		# reqCond = self.requestMode != 0
+		# typeCond = self.o_type != ""
+		# doe_tCond = self.doe_type != ""
+		# doe_aCond = self.doe_args != ""
+		# metCond = self.metric != ""
 
-		atmCond = self.atm_px != 0
-		strRangeCond = self.strike_range['lower'] != self.strike_range['upper']
+		# atmCond = self.atm_px != 0
+		
 
-		if(self.requestMode == 1 and tickerCond and reqCond and typeCond
-								and doe_tCond and doe_aCond and metCond
-								and atmCond and (not strRangeCond)):
+		if(self.requestMode == 1):
 			self.isComplete = True
-			return True
+			return (True, 1)
 
-		elif(self.requestMode == 2 and tickerCond and reqCond and typeCond
-								and doe_tCond and doe_aCond and metCond
-								and (not atmCond) and strRangeCond):
-
+		elif(self.requestMode == 2):
 			self.isComplete = True
-			return True
+			return (True, 2)
+
+
+		# if(self.requestMode == 1 and tickerCond and reqCond and typeCond
+		# 						and doe_tCond and doe_aCond and metCond
+		# 						and atmCond and (not (self.strike_range['lower'] != self.strike_range['upper']))):
+		# 	self.isComplete = True
+		# 	return (True, 1)
+
+		# elif(self.requestMode == 2 and tickerCond and reqCond and typeCond
+		# 						and doe_tCond and doe_aCond and metCond
+		# 						and (not atmCond) and (self.strike_range['lower'] != self.strike_range['upper'])):
+
+		# 	self.isComplete = True
+		# 	return (True, 2)
+
 
 		elif(self.requestMode == 3):
-			return False
+			return (False, 3)
 
 		else:
-			return False
+			return (False, -1)
+
+
+	def makeRequest(self):
+		
+		validation, mode = self.verify()
+
+		if mode == 1:
+			proc = subprocess.run(['python3', '../Pricing/plotting.py', session.sessionTicker, str(1), session.o_type, session.doe_type, session.doe_args, session.metric, str(session.atm_px)], capture_output=True)
+			print(proc.stdout)
+
+		if mode == 2:
+			proc = subprocess.run(['python3', '../Pricing/plotting.py', session.sessionTicker, str(2), session.o_type, session.doe_type, session.doe_args, session.metric, str(session.strike_range['lower']), str(session.strike_range['upper'])], capture_output = True)
+			print(proc.stdout)
 
 
 	def reset(self):
@@ -113,7 +138,7 @@ def mainMenu_handler(message):
 		session.requestMode = 1
 		plottingHandler(message)
 
-	elif (message.text == 'Statistics'):
+	elif (message.text == 'Statistics (In Dev.)'):
 		session.requestMode = 2
 		statsHandler(message)
 
@@ -150,7 +175,6 @@ def plotMenu_handler(message):
 def plotMenu_lvl2_handler(message):
 	reply = bot.send_message(message.chat.id, "Select DOE", reply_markup = plot_doe_markup)
 	bot.register_next_step_handler(reply, plotMenu_DOEArgHandler)
-
 
 
 
@@ -195,7 +219,7 @@ def plotMenu_DOEArgHandler(message):
 		exactDOEhandler(message)
 
 	elif(message.text == "Range"):
-		session.doe_type = "Range"
+		session.doe_type = "range"
 		rangeDOEhandler(message)
 
 	elif(message.text == "Quarterly"):
@@ -259,13 +283,13 @@ def result_handler(message):
 
 	else:
 		session.metric = message.text
-		# session.verify()
 		bot.send_message(message.chat.id, "Your plot is being produced:")
+		filepath = session.makeRequest()
 		session.reset()
 
 def kakasiki():
 	session.strikes_all = getStrikes(session.sessionTicker)
-
+	
 
 # Receive a ticker when uninitialized
 @bot.message_handler(func = lambda msg: '#' == msg.text[0] and session.sessionTicker == "")
@@ -299,7 +323,9 @@ def greek2final(message):
 
 	else:
 		session.metric = message.text
-		bot.send_message(message.chat.id, "Your plot is being produced:", reply_markup = None)
+		filepath = session.makeRequest()
+		session.reset()
+		bot.send_message(message.chat.id, "Your plot is being produced:")
 
 
 # STATISTICS -> Get Underlying
@@ -311,35 +337,10 @@ def greek2final(message):
 
 
 
-# # Handles all text messages that match the regular expression
-# @bot.message_handler(regexp="SOME_REGEXP")
-# def handle_message(message):
-# 	pass
-
-
-
-# # Handles all messages for which the lambda returns True
-# @bot.message_handler(func=lambda message: message.document.mime_type == 'text/plain', content_types=['document'])
-# def handle_text_doc(message):
-# 	pass
-
-# # Which could also be defined as:
-# def test_message(message):
-# 	return message.document.mime_type == 'text/plain'
-
-# @bot.message_handler(func=test_message, content_types=['document'])
-# def handle_text_doc(message):
-# 	pass
-
-
-# # Handlers can be stacked to create a function which will be called if either message_handler is eligible
-# # This handler will be called if the message starts with '/hello' OR is some emoji
-# @bot.message_handler(commands=['hello'])
-# @bot.message_handler(func=lambda msg: msg.text.encode("utf-8") == SOME_FANCY_EMOJI)
-# def send_something(message):
-#     pass
-
-
-
 # Infinite polling (Does not quit on errors)
+@bot.message_handler(commands=['ipo'])
+def hangle(message):
+	bot.send_photo(chat_id=message.chat.id, photo=open('../../Images/AAPL-2022-4-10-18::150-190.jpeg', 'rb'))
+
+
 bot.infinity_polling()
