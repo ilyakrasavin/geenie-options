@@ -13,7 +13,6 @@ markup.row(itembtna, itembtnv)
 markup.row(itembtnc)
 
 # Plotting Menu Step 1:
-
 plot_markup1 = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 plotmenu_btn1 = types.KeyboardButton("DOE x ATM")
 plotmenu_btn2 = types.KeyboardButton("DOE x Strike Range")
@@ -37,10 +36,10 @@ plot_doe_markup.row(doe_button5)
 
 # Plotting DOE Metric setting Markup
 plot_metrics_markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-metric_button1 = types.KeyboardButton("Spot Px")
-metric_button2 = types.KeyboardButton("OI")
-metric_button3 = types.KeyboardButton("Volume")
-metric_button4 = types.KeyboardButton("IV")
+metric_button1 = types.KeyboardButton("lastPrice")
+metric_button2 = types.KeyboardButton("openInterest")
+metric_button3 = types.KeyboardButton("volume")
+metric_button4 = types.KeyboardButton("impliedVolatility")
 metric_button5 = types.KeyboardButton("Greeks")
 metric_button6 = types.KeyboardButton("Cancel")
 
@@ -80,7 +79,7 @@ doe_range_markup.row(range9)
 
 
 greekMarkup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-greek1 = types.KeyboardButton("delta")
+greek1 = types.KeyboardButton("Delta")
 greek2 = types.KeyboardButton("Gamma")
 greek3 = types.KeyboardButton("Vega")
 greek4 = types.KeyboardButton("Theta")

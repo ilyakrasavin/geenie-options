@@ -15,7 +15,44 @@ import compute_greeks
 # User-defined functions for Series Applications
 
 
-def getStrikes(ticker):
+# def getStrikes(ticker):
+#     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+
+#     ticker = ticker
+
+#     req = requests.get('http://query1.finance.yahoo.com/v7/finance/options/' + ticker, headers = headers)
+
+#     # Decode the response
+#     dates = pd.read_json(req.content.decode())
+
+#     return dates.optionChain[1][0]['strikes']
+
+# def getExpirations(ticker):
+
+#     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+
+#     ticker = ticker
+
+#     req = requests.get('http://query1.finance.yahoo.com/v7/finance/options/' + ticker, headers = headers)
+
+#     # Decode the response
+
+#     # Decode the response
+#     dates = pd.read_json(req.content.decode())
+
+#     # Translate Unix Timestamps into Python TimeDate 
+#     dates_unix = dates.optionChain[1][0]['expirationDates']
+#     dates_timedate = pd.to_datetime(dates_unix, origin='unix', unit = 's')
+
+#     # Convert to Human-readable form
+#     dates_human = []
+#     for i, each in enumerate(dates_timedate):
+#         dates_human.append(str(each.year) + '-' + str(each.month) + '-' + str(each.day))
+
+#     return dates_human
+
+
+def getStrikesDOEs(ticker):
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
 
     ticker = ticker
@@ -25,9 +62,16 @@ def getStrikes(ticker):
     # Decode the response
     dates = pd.read_json(req.content.decode())
 
-    return dates.optionChain[1][0]['strikes']
+    # Translate Unix Timestamps into Python TimeDate 
+    dates_unix = dates.optionChain[1][0]['expirationDates']
+    dates_timedate = pd.to_datetime(dates_unix, origin='unix', unit = 's')
 
+    # Convert to Human-readable form
+    dates_human = []
+    for i, each in enumerate(dates_timedate):
+        dates_human.append(str(each.year) + '-' + str(each.month) + '-' + str(each.day))
 
+    return dates.optionChain[1][0]['strikes'], dates_human
 
 
 def getGreeks(greek, type, strike, underlyingPx, iv, rho, t):

@@ -1,5 +1,6 @@
 # Telegram Bot API
 
+from base64 import decode
 from datetime import datetime
 import subprocess
 import telebot
@@ -15,7 +16,7 @@ import matplotlib.pyplot as plt
 
 
 sys.path.insert(0, '../Requests')
-from request_automatic import getStrikes
+from request_automatic import getStrikesDOEs
 
 # STORE THE PROGRAM STATE on EXECUTION:
 # Plotting Mode (0 - uninitialized / 1 - DOExATM / 2 - DOExStrikeRange / 3 - Statistics)
@@ -39,7 +40,9 @@ class SessionState:
 		self.strike_range = {}
 
 		self.strikes_all = []
+		self.expirations_all = []
 
+		self.chat_id = ""
 
 	def verify(self):
 
@@ -89,11 +92,13 @@ class SessionState:
 
 		if mode == 1:
 			proc = subprocess.run(['python3', '../Pricing/plotting.py', session.sessionTicker, str(1), session.o_type, session.doe_type, session.doe_args, session.metric, str(session.atm_px)], capture_output=True)
-			print(proc.stdout)
+			print(proc.stdout.decode('utf-8'))
+			hangleImage(self.chat_id, proc.stdout.decode('utf-8')[:-1])
 
 		if mode == 2:
 			proc = subprocess.run(['python3', '../Pricing/plotting.py', session.sessionTicker, str(2), session.o_type, session.doe_type, session.doe_args, session.metric, str(session.strike_range['lower']), str(session.strike_range['upper'])], capture_output = True)
-			print(proc.stdout)
+			print(proc.stdout.decode('utf-8'))
+			hangleImage(self.chat_id, proc.stdout.decode('utf-8')[:-1])
 
 
 	def reset(self):
@@ -119,6 +124,7 @@ buttons = {}
 @bot.message_handler(commands=['start'])
 def handle_menu_call(message):
 	reply = bot.send_message(message.chat.id, "Please choose an option:", reply_markup = markup)
+	session.chat_id = message.chat.id
 	bot.register_next_step_handler(reply, mainMenu_handler)
 
 def getUnderlying(message):
@@ -215,7 +221,7 @@ def plotMenu_DOEHandler(message):
 
 def plotMenu_DOEArgHandler(message):
 	if(message.text == "Exact"):
-		session.doe_type = "Exact"
+		session.doe_type = "exact"
 		exactDOEhandler(message)
 
 	elif(message.text == "Range"):
@@ -223,11 +229,11 @@ def plotMenu_DOEArgHandler(message):
 		rangeDOEhandler(message)
 
 	elif(message.text == "Quarterly"):
-		session.doe_type = "Quarterly"
+		session.doe_type = "quarterly"
 		otherDOEhandler(message)
 
 	elif(message.text == "Weekly"):
-		session.doe_type = "Weekly"
+		session.doe_type = "weekly"
 		otherDOEhandler(message)
 
 	elif(message.text == "Cancel"):
@@ -235,21 +241,37 @@ def plotMenu_DOEArgHandler(message):
 		bot.send_message(message.chat.id, "Aborted")
 
 
+# ADD KEYBOARD W/ EXPIRATION DATES
 def exactDOEhandler(message):
 	bot.send_message(message.chat.id, "Provide Exact DOE in YY-MM-DD format")
+
+	doeList = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+	doeButtons = {}
+
+	all_expirations = expirationsData()
+
+	for each in all_expirations:
+		# doeButtons[each] = types.KeyboardButton(each)
+		doeList.row(types.KeyboardButton(each))
+
+	reply = bot.send_message(message.chat.id, "Please Select DOE:", reply_markup = doeList)
+	# assert(session.doe_type == "exact")
+	# session.doe_args = message.text
+
+	bot.register_next_step_handler(reply, exactDoe2Metric)
+
+
+def exactDoe2Metric(message):
+	assert(session.doe_type == "exact")
+	session.doe_args = message.text
+	plotMenu_MetricHandler(message)
+
 
 def rangeDOEhandler(message):
 	reply = bot.send_message(message.chat.id, "Please choose the range:", reply_markup = doe_range_markup)
 	bot.register_next_step_handler(reply, range2next)
 
 def otherDOEhandler(message):
-	plotMenu_MetricHandler(message)
-
-
-@bot.message_handler(func = lambda msg: msg.text[2] == '-' and session.isComplete == False)
-def getExactDOE(message):
-	assert(session.doe_type == "Exact")
-	session.doe_args = message.text
 	plotMenu_MetricHandler(message)
 
 
@@ -287,19 +309,23 @@ def result_handler(message):
 		filepath = session.makeRequest()
 		session.reset()
 
-def kakasiki():
-	session.strikes_all = getStrikes(session.sessionTicker)
-	
+
+def strikes_expirations():
+
+	strikes, does = getStrikesDOEs(session.sessionTicker)
+
+	session.strikes_all = strikes
+	session.expirations_all = does
+
 
 # Receive a ticker when uninitialized
 @bot.message_handler(func = lambda msg: '#' == msg.text[0] and session.sessionTicker == "")
 def getTicker(message):
-	bot.send_message(message.chat.id, 'KOK!')
 
 	# Initialize the session state	
 	session.sessionTicker = message.text[1:]
 
-	kakasiki()
+	strikes_expirations()
 
 	for each in session.strikes_all:
 		buttons[each] = types.KeyboardButton(each)
@@ -322,10 +348,17 @@ def greek2final(message):
 		bot.send_message(message.chat.id, "Aborted")
 
 	else:
-		session.metric = message.text
-		filepath = session.makeRequest()
+		session.metric = message.text.lower()
+		session.makeRequest()
 		session.reset()
 		bot.send_message(message.chat.id, "Your plot is being produced:")
+
+
+
+# @bot.message_handler(commands=['ipo'])
+def hangleImage(id, filename):
+	bot.send_photo(id, photo=open('../../Images/' + filename, 'rb'))
+
 
 
 # STATISTICS -> Get Underlying
@@ -336,11 +369,5 @@ def greek2final(message):
 # "About" -> Bot's Intro
 
 
-
 # Infinite polling (Does not quit on errors)
-@bot.message_handler(commands=['ipo'])
-def hangle(message):
-	bot.send_photo(chat_id=message.chat.id, photo=open('../../Images/AAPL-2022-4-10-18::150-190.jpeg', 'rb'))
-
-
 bot.infinity_polling()

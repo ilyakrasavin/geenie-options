@@ -5,22 +5,22 @@ import pandas as pd
 import datetime
 import numpy as np
 
+import subprocess
 
-
+# Helper Class
 class PlottingHelper:
 
     # Constructs and returns the horzontal axis containing Date of Expiration values.
     # Traverses directories and selects dates based on the mode chosen.
     
-    # Mode: Exact, Range, Regular, Weeklies
-
+    # Modes: Exact, Range, Quarterly(Regular), Weeklies
     def getDoeAxis(self, ticker, mode, args):
 
-        # Read in all Expirations available on Disk
+        # Read in all Expirations available for the corresponding Ticker
         pathk = "../../Data/" + str(ticker) + "/"
         expirations_all = os.listdir(path = pathk)
 
-        # Track valid expirations as per the mode chosen
+        # Collects valid expirations as per the mode chosen
         valid_expirations = []
         today_y = datetime.datetime.today().strftime('%y')
         today_m = datetime.datetime.today().strftime('%m')
@@ -28,7 +28,7 @@ class PlottingHelper:
 
 
         # Range + (30D / 60D / 90D / 180D / 1Y / 1Y6M / 2Y / Max) as String
-        # Defaults to MAX range on ambiguos/uninitialized range argument
+        # Defaults to MAX range on ambiguos/uninitialized range arguments
         if (mode == 'range'):
 
             match args:
@@ -36,6 +36,7 @@ class PlottingHelper:
                 # Expirations within one month away from today (Uses the same date)
                 case '30D':
                     
+                    # Collect valid expirations
                     for each in expirations_all:
 
                         # Take the difference in days
@@ -45,6 +46,7 @@ class PlottingHelper:
                         if each not in valid_expirations and dayDifference <= 30 and dayDifference >= 0:
                             valid_expirations.append(each)
                     
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
         
@@ -54,6 +56,7 @@ class PlottingHelper:
                 # Expirations within two months away from today (Uses the same date)
                 case '60D':
 
+                    # Collect valid expirations
                     for each in expirations_all:
 
                         # Take the difference in days
@@ -62,7 +65,8 @@ class PlottingHelper:
                         # Add expirations in the current month past today
                         if each not in valid_expirations and dayDifference <= 60 and dayDifference >= 0:
                             valid_expirations.append(each)
-                    
+
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
 
@@ -71,6 +75,7 @@ class PlottingHelper:
                 # Expirations within three months away from today (Uses the same date)
                 case '90D':
 
+                    # Collect valid expirations
                     for each in expirations_all:
 
                         # Take the difference in days
@@ -80,6 +85,7 @@ class PlottingHelper:
                         if each not in valid_expirations and dayDifference <= 90 and dayDifference >= 0:
                             valid_expirations.append(each)
                     
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
 
@@ -88,6 +94,7 @@ class PlottingHelper:
                 # Expirations within six month away from today (Uses the same date)
                 case '180D':
 
+                    # Collect valid expirations
                     for each in expirations_all:
 
                         # Take the difference in days
@@ -97,6 +104,7 @@ class PlottingHelper:
                         if each not in valid_expirations and dayDifference <= 180 and dayDifference >= 0:
                             valid_expirations.append(each)
                     
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
 
@@ -105,6 +113,7 @@ class PlottingHelper:
                 # Expirations within one year away from today (Uses the same date)
                 case '1Y':
 
+                    # Collect valid expirations
                     for each in expirations_all:
 
                         # Take the difference in days
@@ -114,6 +123,7 @@ class PlottingHelper:
                         if each not in valid_expirations and dayDifference <= 365 and dayDifference >= 0:
                             valid_expirations.append(each)
                     
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
 
@@ -123,6 +133,7 @@ class PlottingHelper:
                 # Expirations within one month away from today
                 case '1Y6M':
 
+                    # Collect valid expirations
                     for each in expirations_all:
 
                         # Take the difference in days
@@ -132,6 +143,7 @@ class PlottingHelper:
                         if each not in valid_expirations and dayDifference <= 548 and dayDifference >= 0:
                             valid_expirations.append(each)
                     
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
 
@@ -141,6 +153,7 @@ class PlottingHelper:
                 # Expirations within one month away from today
                 case '2Y':
 
+                    # Collect valid expirations
                     for each in expirations_all:
 
                         # Take the difference in days
@@ -150,6 +163,7 @@ class PlottingHelper:
                         if each not in valid_expirations and dayDifference <= 730 and dayDifference >= 0:
                             valid_expirations.append(each)
                     
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
 
@@ -158,6 +172,7 @@ class PlottingHelper:
                 # Expirations within one month away from today
                 case '3Y':
 
+                    # Collect valid expirations
                     for each in expirations_all:
 
                         # Take the difference in days
@@ -167,12 +182,13 @@ class PlottingHelper:
                         if each not in valid_expirations and dayDifference <= 1095 and dayDifference >= 0:
                             valid_expirations.append(each)
                     
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
 
                     return valid_expirations_sorted  
 
-                # Use all available Expiration Dates
+                # Use all available Expiration Dates Past Today
                 case 'MAX':
 
                     for each in expirations_all:
@@ -184,14 +200,30 @@ class PlottingHelper:
                         if each not in valid_expirations and dayDifference >= 0:
                             valid_expirations.append(each)
 
+                    # Sort the Expirations for Axis Arrangement Consistency
                     valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
                     valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
         
                     return valid_expirations_sorted
 
                 # Defaults to Maximum
+                # !!! MAX CODE REPEATED !!!
                 case _:
-                    return
+
+                    for each in expirations_all:
+
+                        # Take the difference in days
+                        dayDifference = (pd.to_datetime(each) - datetime.datetime.today()).days
+
+                        # Add expirations in the current month past today
+                        if each not in valid_expirations and dayDifference >= 0:
+                            valid_expirations.append(each)
+
+                    # Sort the Expirations for Axis Arrangement Consistency
+                    valid_expirations_sorted = pd.to_datetime(valid_expirations).sort_values()
+                    valid_expirations_sorted = valid_expirations_sorted.to_pydatetime()
+        
+                    return valid_expirations_sorted
 
 
 
@@ -248,9 +280,7 @@ class PlottingHelper:
 
     # Third friday can be between 14th (Month starts on Friday) and 21st (Month starts on Monday) of the month
     def isThirdFriday(self, doe_string):
-
         stringDT = pd.to_datetime(doe_string)
-        
         return (stringDT.weekday() == 4 and stringDT.day > 14 and stringDT.day <= 21)
 
 
@@ -258,7 +288,6 @@ class PlottingHelper:
     # Third fridays of which months?
     def getCycle(self, doe_string):
         yield
-
 
     # Assure is a regular cycle option
     def isQuarterly(self, doe_string):
@@ -270,11 +299,9 @@ class PlottingHelper:
 
 
 
-
-
 class PlottingMain:
 
-    # Plots specified metrics for ATM options according to specified Option Type / DOE settings
+    # Plots specified metrics for ATM options of Given Expiration Dates
     # 
     # Expected Input:
     # o_type: Contract Type: C / P / C & P
@@ -332,7 +359,7 @@ class PlottingMain:
 
         plt.savefig('../../Images/' + imagename + '.jpeg', dpi = 'figure', bbox_inches='tight')
 
-        print(imagename+".jpeg")
+        print(imagename + '.jpeg')
 
 
     # Plots Multiple Curves (Different Expiration Dates) for the specified strike range
@@ -410,12 +437,15 @@ class PlottingMain:
         plt.savefig('../../Images/' + imagename + '.jpeg', dpi = 'figure', bbox_inches='tight')
         # Plot metrics (X DOE curves + corresponding values)
 
-        print(imagename+".jpeg")
+        print(imagename + '.jpeg')
 
 
-
+# Calls Corresponding plotting facilities
 def main(ticker_passed, mode, opt_type, doe_type, doe_args, metric, atm_price_or_rangeBottom, range_upper = 0):
     
+    # Make a Data Request
+    subprocess.run(['python3', '../Requests/request_automatic.py', ticker_passed])
+
     if mode == '1':    
         PlottingMain.plotDoeATM(ticker_passed, opt_type, [doe_type, doe_args], metric, float(atm_price_or_rangeBottom))
 
@@ -424,18 +454,14 @@ def main(ticker_passed, mode, opt_type, doe_type, doe_args, metric, atm_price_or
 
 
 
+# Resolves the Program calls: Plotting Mode & Corresponding arguments
 if __name__ == '__main__':
 
-# ATM 1
-#  o_type, doe_type, doe_args, metric, atm_price
-
-# RANGE 2
-# o_type, doe_type, doe_args, metric, strike_bottom, strike_upper
-
+    # ATM data for Specified DOE
     if(argv[2] == '1'):
-        # Pass o_type, doe_type, doe_args, metric, atm_price
         main(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7])
 
+    # DOE Curves for Specified Strike Ranges
     elif(argv[2] == '2'):
         main(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7], argv[8])
 
