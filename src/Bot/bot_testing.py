@@ -174,6 +174,13 @@ def plotMenu_contractTypeHandler(message):
 
 # Collect input from Plotting Menu
 def plotMenu_handler(message):
+
+	strikes_expirations()
+
+	for each in session.strikes_all:
+		buttons[each] = types.KeyboardButton(each)
+		strikeRange.row(buttons[each])
+
 	reply = bot.send_message(message.chat.id, "Select Plotting Mode", reply_markup = plot_markup1)
 	bot.register_next_step_handler(reply, plotMenu_DOEHandler)
 
@@ -246,9 +253,8 @@ def exactDOEhandler(message):
 	bot.send_message(message.chat.id, "Provide Exact DOE in YY-MM-DD format")
 
 	doeList = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-	doeButtons = {}
 
-	all_expirations = expirationsData()
+	all_expirations = session.expirations_all
 
 	for each in all_expirations:
 		# doeButtons[each] = types.KeyboardButton(each)
@@ -306,16 +312,17 @@ def result_handler(message):
 	else:
 		session.metric = message.text
 		bot.send_message(message.chat.id, "Your plot is being produced:")
-		filepath = session.makeRequest()
+		session.makeRequest()
 		session.reset()
 
 
 def strikes_expirations():
 
-	strikes, does = getStrikesDOEs(session.sessionTicker)
+	strikes, does, atm = getStrikesDOEs(session.sessionTicker, session.o_type)
 
 	session.strikes_all = strikes
 	session.expirations_all = does
+	session.atm_px = atm
 
 
 # Receive a ticker when uninitialized
@@ -325,11 +332,11 @@ def getTicker(message):
 	# Initialize the session state	
 	session.sessionTicker = message.text[1:]
 
-	strikes_expirations()
+	# strikes_expirations()
 
-	for each in session.strikes_all:
-		buttons[each] = types.KeyboardButton(each)
-		strikeRange.row(buttons[each])
+	# for each in session.strikes_all:
+	# 	buttons[each] = types.KeyboardButton(each)
+	# 	strikeRange.row(buttons[each])
 
 	reply = bot.send_message(message.chat.id, "Select Contract Type:", reply_markup = contractType_markup)
 
@@ -357,7 +364,9 @@ def greek2final(message):
 
 # @bot.message_handler(commands=['ipo'])
 def hangleImage(id, filename):
-	bot.send_photo(id, photo=open('../../Images/' + filename, 'rb'))
+	filepath = '../../Images/' + filename
+	# bot.send_document(id, document=open(filepath, 'rb'))
+	bot.send_photo(id, photo=open(filepath, 'rb'))
 
 
 

@@ -52,7 +52,7 @@ import compute_greeks
 #     return dates_human
 
 
-def getStrikesDOEs(ticker):
+def getStrikesDOEs(ticker, o_type):
     headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
 
     ticker = ticker
@@ -71,7 +71,27 @@ def getStrikesDOEs(ticker):
     for i, each in enumerate(dates_timedate):
         dates_human.append(str(each.year) + '-' + str(each.month) + '-' + str(each.day))
 
-    return dates.optionChain[1][0]['strikes'], dates_human
+
+    lastPrice = dates.optionChain[1][0]['quote']['regularMarketPrice']
+
+    atm_px = 0
+
+    if o_type == 'C':
+        dates.optionChain[1][0]['strikes'].reverse()
+        for each in dates.optionChain[1][0]['strikes']:
+            if each < lastPrice:
+                atm_px = each
+                dates.optionChain[1][0]['strikes'].reverse()
+                break
+
+    if o_type == 'P':
+        for each in dates.optionChain[1][0]['strikes']:
+            if each > lastPrice:
+                atm_px = each
+                break
+
+    
+    return dates.optionChain[1][0]['strikes'], dates_human, atm_px
 
 
 def getGreeks(greek, type, strike, underlyingPx, iv, rho, t):
