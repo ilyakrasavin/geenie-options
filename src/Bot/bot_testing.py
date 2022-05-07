@@ -1,33 +1,28 @@
-# Telegram Bot API
-
-from base64 import decode
-from datetime import datetime
-import subprocess
 import telebot
 from telebot import types
 
-import sys
-
-from markup import * 
-from KEYS import API_TOKEN
-
-
+from base64 import decode
+from datetime import datetime
 import matplotlib.pyplot as plt
 
+import subprocess
+import sys
+
+# User-Defined Libraries / Paths
+from markup import * 
+from KEYS import API_TOKEN
 
 sys.path.insert(0, '../Requests')
 from request_automatic import getStrikesDOEs
 
-# STORE THE PROGRAM STATE on EXECUTION:
-# Plotting Mode (0 - uninitialized / 1 - DOExATM / 2 - DOExStrikeRange / 3 - Statistics)
 
+# Stores the Session State
 
 class SessionState:
 
 	def __init__(self):
 		self.sessionTicker = ""
 		self.requestMode = 0
-		self.isComplete = False
 
 		# Common Attributes:
 		self.o_type = ""
@@ -88,7 +83,7 @@ class SessionState:
 
 	def makeRequest(self):
 		
-		validation, mode = self.verify()
+		_, mode = self.verify()
 
 		if mode == 1:
 			proc = subprocess.run(['python3', '../Pricing/plotting.py', session.sessionTicker, str(1), session.o_type, session.doe_type, session.doe_args, session.metric, str(session.atm_px)], capture_output=True)
@@ -112,31 +107,21 @@ bot = telebot.TeleBot(API_TOKEN)
 session = SessionState()
 session.__init__()
 
-strikeRangeTuple = (0, 0)
-rangeCollection = False
-
-
-
-strikeRange = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-buttons = {}
-
 
 @bot.message_handler(commands=['start'])
-def handle_menu_call(message):
-	reply = bot.send_message(message.chat.id, "Please choose an option:", reply_markup = markup)
+def main_menu(message):
+	reply = bot.send_message(message.chat.id, "Please choose a mode to proceed!", reply_markup = markup)
 	session.chat_id = message.chat.id
 	bot.register_next_step_handler(reply, mainMenu_handler)
-
-def getUnderlying(message):
-	bot.send_message(message.chat.id, "Enter the Ticker Symol preceded by #:")
-
 
 def plottingHandler(message):
 	getUnderlying(message)
 
-def statsHandler(message):
-	getUnderlying(message)
-
+def statModeHandler(message):
+	bot.send_message(message.chat.id, "Sorry, this feature is still in development!")
+	# TODO: Proceed to Underlying 
+	session.reset()
+	
 
 def mainMenu_handler(message):
 
@@ -146,15 +131,20 @@ def mainMenu_handler(message):
 
 	elif (message.text == 'Statistics (In Dev.)'):
 		session.requestMode = 2
-		statsHandler(message)
+		statModeHandler(message)
 
 	elif (message.text == 'Cancel'):
 		session.reset()
-		bot.send_message(message.chat.id, "Aborted")
+		bot.send_message(message.chat.id, "Aborted. Use /start to make another request!")
+
+
+def getUnderlying(message):
+	bot.send_message(message.chat.id, "Enter the Ticker Symol preceded by #:")
 
 
 # Store the data in the session class
 def plotMenu_contractTypeHandler(message):
+
 	if(message.text == "Call"):
 		session.o_type = "C"
 		plotMenu_handler(message)
@@ -165,7 +155,9 @@ def plotMenu_contractTypeHandler(message):
 
 	elif(message.text == "Call & Put"):
 		session.o_type = "B"
-		plotMenu_handler(message)
+		# plotMenu_handler(message)
+		bot.send_message(message.chat.id, "Sorry. This feature is still in development.")
+		session.reset()
 
 	elif(message.text == "Cancel"):
 		session.reset()
@@ -175,58 +167,41 @@ def plotMenu_contractTypeHandler(message):
 # Collect input from Plotting Menu
 def plotMenu_handler(message):
 
-	strikes_expirations()
+	# Make requests for DOEs, Strikes and ATM px.
+	populateSessionData()
 
+	# Populate the Strike Range Keyboard:
 	for each in session.strikes_all:
-		buttons[each] = types.KeyboardButton(each)
-		strikeRange.row(buttons[each])
+		# buttons[each] = types.KeyboardButton(each)
+		strikeRange.row(types.KeyboardButton(each))
 
-	reply = bot.send_message(message.chat.id, "Select Plotting Mode", reply_markup = plot_markup1)
-	bot.register_next_step_handler(reply, plotMenu_DOEHandler)
-
-
-def plotMenu_lvl2_handler(message):
-	reply = bot.send_message(message.chat.id, "Select DOE", reply_markup = plot_doe_markup)
-	bot.register_next_step_handler(reply, plotMenu_DOEArgHandler)
+	reply = bot.send_message(message.chat.id, "Select Plotting Mode", reply_markup = plotModeMarkup)
+	bot.register_next_step_handler(reply, resolveModeMenu)
 
 
 
-def plotMenu_strikeRHandler(message):
-	reply = bot.send_message(message.chat.id, "Please select the LOWER Strike Price:", reply_markup = strikeRange)
-	bot.register_next_step_handler(reply, bottomStrikeHandler)
-
-
-def bottomStrikeHandler(message):
-	session.strike_range['lower'] = float(message.text)
-	upperStrike(message)
-
-def upperStrike(message):
-	reply = bot.send_message(message.chat.id, "Please select the UPPER Strike Price:", reply_markup = strikeRange)
-	bot.register_next_step_handler(reply, upperStrikeHandler)
-
-
-def upperStrikeHandler(message):
-	session.strike_range['upper'] = float(message.text)
-	plotMenu_lvl2_handler(message)
-
-
-def plotMenu_DOEHandler(message):
+def resolveModeMenu(message):
 	if(message.text == "DOE x ATM"):
 		session.requestMode = 1
-		plotMenu_lvl2_handler(message)
+		resolveDoeMode(message)
 
 	elif(message.text == "DOE x Strike Range"):
 		session.requestMode = 2
-		plotMenu_strikeRHandler(message)
+		resolveStrikeLower(message)
 
 	elif(message.text == "Cancel"):
 		session.reset()
 		bot.send_message(message.chat.id, "Aborted")
 
 
+# RESOLVE DOE RELATED OPTIONS
+#####################################################################
+def resolveDoeMode(message):
+	reply = bot.send_message(message.chat.id, "Select DOE Mode:", reply_markup = doeModeMarkup)
+	bot.register_next_step_handler(reply, resolveDoeArgs)
 
 
-def plotMenu_DOEArgHandler(message):
+def resolveDoeArgs(message):
 	if(message.text == "Exact"):
 		session.doe_type = "exact"
 		exactDOEhandler(message)
@@ -248,19 +223,18 @@ def plotMenu_DOEArgHandler(message):
 		bot.send_message(message.chat.id, "Aborted")
 
 
-# ADD KEYBOARD W/ EXPIRATION DATES
 def exactDOEhandler(message):
 	bot.send_message(message.chat.id, "Provide Exact DOE in YY-MM-DD format")
 
-	doeList = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+	doeListMarkup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 
 	all_expirations = session.expirations_all
 
 	for each in all_expirations:
 		# doeButtons[each] = types.KeyboardButton(each)
-		doeList.row(types.KeyboardButton(each))
+		doeListMarkup.row(types.KeyboardButton(each))
 
-	reply = bot.send_message(message.chat.id, "Please Select DOE:", reply_markup = doeList)
+	reply = bot.send_message(message.chat.id, "Please Select DOE:", reply_markup = doeListMarkup)
 	# assert(session.doe_type == "exact")
 	# session.doe_args = message.text
 
@@ -270,77 +244,31 @@ def exactDOEhandler(message):
 def exactDoe2Metric(message):
 	assert(session.doe_type == "exact")
 	session.doe_args = message.text
-	plotMenu_MetricHandler(message)
+	metricHandler(message)
+
 
 
 def rangeDOEhandler(message):
-	reply = bot.send_message(message.chat.id, "Please choose the range:", reply_markup = doe_range_markup)
-	bot.register_next_step_handler(reply, range2next)
-
-def otherDOEhandler(message):
-	plotMenu_MetricHandler(message)
+	reply = bot.send_message(message.chat.id, "Please choose the range:", reply_markup = doeRangeMarkup)
+	bot.register_next_step_handler(reply, range2metric)
 
 
-def plotMenu_MetricHandler(message):
-	reply = bot.send_message(message.chat.id, "Plot:", reply_markup = plot_metrics_markup)
-	bot.register_next_step_handler(reply, result_handler)
-
-
-def range2next(message):
+def range2metric(message):
 	if(message.text == "Cancel"):
 		bot.send_message(message.chat.id, "Aborted")
 		session.reset()
 	else:
 		session.doe_args = message.text
-		plotMenu_MetricHandler(message)
+		metricHandler(message)
 	
 
+def otherDOEhandler(message):
+	metricHandler(message)
 
 
-def plotMenu_StrikeRangeHandler1(message):
-	bot.send_message(message.chat.id, message.text)
-
-
-def result_handler(message):
-
-	if(message.text == "Cancel"):
-		session.reset()
-
-	elif(message.text == "Greeks"):
-		greekHandler(message)
-
-	else:
-		session.metric = message.text
-		bot.send_message(message.chat.id, "Your plot is being produced:")
-		session.makeRequest()
-		session.reset()
-
-
-def strikes_expirations():
-
-	strikes, does, atm = getStrikesDOEs(session.sessionTicker, session.o_type)
-
-	session.strikes_all = strikes
-	session.expirations_all = does
-	session.atm_px = atm
-
-
-# Receive a ticker when uninitialized
-@bot.message_handler(func = lambda msg: '#' == msg.text[0] and session.sessionTicker == "")
-def getTicker(message):
-
-	# Initialize the session state	
-	session.sessionTicker = message.text[1:]
-
-	# strikes_expirations()
-
-	# for each in session.strikes_all:
-	# 	buttons[each] = types.KeyboardButton(each)
-	# 	strikeRange.row(buttons[each])
-
-	reply = bot.send_message(message.chat.id, "Select Contract Type:", reply_markup = contractType_markup)
-
-	bot.register_next_step_handler(reply, plotMenu_contractTypeHandler)
+def metricHandler(message):
+	reply = bot.send_message(message.chat.id, "Plot:", reply_markup = metricModeMarkup)
+	bot.register_next_step_handler(reply, resolveResult)
 
 
 
@@ -356,9 +284,80 @@ def greek2final(message):
 
 	else:
 		session.metric = message.text.lower()
+		bot.send_message(message.chat.id, "Your plot is being produced:")
 		session.makeRequest()
 		session.reset()
+
+
+#####################################################################
+
+
+
+# RESOLVE STRIKE RANGES
+#####################################################################
+def resolveStrikeLower(message):
+	reply = bot.send_message(message.chat.id, "Please select the LOWER Strike Price:", reply_markup = strikeRange)
+	bot.register_next_step_handler(reply, lowerStrikeHandler)
+
+def lowerStrikeHandler(message):
+	session.strike_range['lower'] = float(message.text)
+	upperStrike(message)
+
+def upperStrike(message):
+	reply = bot.send_message(message.chat.id, "Please select the UPPER Strike Price:", reply_markup = strikeRange)
+	bot.register_next_step_handler(reply, upperStrikeHandler)
+
+def upperStrikeHandler(message):
+	session.strike_range['upper'] = float(message.text)
+	resolveDoeMode(message)
+#####################################################################
+
+
+
+def resolveResult(message):
+
+	if(message.text == "Cancel"):
+		session.reset()
+
+	elif(message.text == "Greeks"):
+		greekHandler(message)
+
+	else:
+
+		if message.text == 'Last Px.':
+			session.metric = 'lastPrice'
+		elif message.text == 'Volume':
+			session.metric = 'volume'
+		elif message.text == 'OI':
+			session.metric = 'openInterest'
+		elif message.text == 'IV':
+			session.metric = 'impliedVolatility'
+		
 		bot.send_message(message.chat.id, "Your plot is being produced:")
+
+		session.makeRequest()
+		session.reset()
+
+
+
+def populateSessionData():
+
+	strikes, does, atm = getStrikesDOEs(session.sessionTicker, session.o_type)
+
+	session.strikes_all = strikes
+	session.expirations_all = does
+	session.atm_px = atm
+
+
+
+# Receive a ticker if uninitialized
+@bot.message_handler(func = lambda msg: '#' == msg.text[0] and session.sessionTicker == "")
+def getTicker(message):
+
+	session.sessionTicker = message.text[1:]
+
+	reply = bot.send_message(message.chat.id, "Select Contract Type:", reply_markup = contractType_markup)
+	bot.register_next_step_handler(reply, plotMenu_contractTypeHandler)
 
 
 
@@ -375,7 +374,7 @@ def hangleImage(id, filename):
 # Put/call parity
 
 
-# "About" -> Bot's Intro
+# "About" Command -> Bot's Intro
 
 
 # Infinite polling (Does not quit on errors)

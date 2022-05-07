@@ -13,40 +13,40 @@ markup.row(itembtna, itembtnv)
 markup.row(itembtnc)
 
 # Plotting Menu Step 1:
-plot_markup1 = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-plotmenu_btn1 = types.KeyboardButton("DOE x ATM")
-plotmenu_btn2 = types.KeyboardButton("DOE x Strike Range")
-plotmenu_btn3 = types.KeyboardButton("Cancel")
-plot_markup1.row(plotmenu_btn1)
-plot_markup1.row(plotmenu_btn2)
-plot_markup1.row(plotmenu_btn3)
+plotModeMarkup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+plotMode_btn1 = types.KeyboardButton("DOE x ATM")
+plotMode_btn2 = types.KeyboardButton("DOE x Strike Range")
+plotMode_btn3 = types.KeyboardButton("Cancel")
+plotModeMarkup.row(plotMode_btn1)
+plotModeMarkup.row(plotMode_btn2)
+plotModeMarkup.row(plotMode_btn3)
 
 
 # Plotting DOE Mode setting markup
-plot_doe_markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-doe_button1 = types.KeyboardButton("Exact")
-doe_button2 = types.KeyboardButton("Range")
-doe_button3 = types.KeyboardButton("Quarterly")
-doe_button4 = types.KeyboardButton("Weekly")
-doe_button5 = types.KeyboardButton("Cancel")
-plot_doe_markup.row(doe_button1, doe_button2)
-plot_doe_markup.row(doe_button3, doe_button4)
-plot_doe_markup.row(doe_button5)
+doeModeMarkup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+doe_mode1 = types.KeyboardButton("Exact")
+doe_mode2 = types.KeyboardButton("Range")
+doe_mode3 = types.KeyboardButton("Quarterly")
+doe_mode4 = types.KeyboardButton("Weekly")
+doe_mode5 = types.KeyboardButton("Cancel")
+doeModeMarkup.row(doe_mode1, doe_mode2)
+doeModeMarkup.row(doe_mode3, doe_mode4)
+doeModeMarkup.row(doe_mode5)
 
 
 # Plotting DOE Metric setting Markup
-plot_metrics_markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-metric_button1 = types.KeyboardButton("lastPrice")
-metric_button2 = types.KeyboardButton("openInterest")
-metric_button3 = types.KeyboardButton("volume")
-metric_button4 = types.KeyboardButton("impliedVolatility")
+metricModeMarkup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+metric_button1 = types.KeyboardButton("Last Px.")
+metric_button2 = types.KeyboardButton("OI")
+metric_button3 = types.KeyboardButton("Volume")
+metric_button4 = types.KeyboardButton("IV")
 metric_button5 = types.KeyboardButton("Greeks")
 metric_button6 = types.KeyboardButton("Cancel")
 
-plot_metrics_markup.row(metric_button1, metric_button2)
-plot_metrics_markup.row(metric_button3, metric_button4)
-plot_metrics_markup.row(metric_button5)
-plot_metrics_markup.row(metric_button6)
+metricModeMarkup.row(metric_button1, metric_button2)
+metricModeMarkup.row(metric_button3, metric_button4)
+metricModeMarkup.row(metric_button5)
+metricModeMarkup.row(metric_button6)
 
 
 # Contract Type markup
@@ -61,7 +61,7 @@ contractType_markup.row(typeButton3)
 contractType_markup.row(typeButton4)
 
 
-doe_range_markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+doeRangeMarkup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 range1 = types.KeyboardButton("30D")
 range2 = types.KeyboardButton("60D")
 range3 = types.KeyboardButton("90D")
@@ -72,9 +72,9 @@ range7 = types.KeyboardButton("2Y")
 range8 = types.KeyboardButton("MAX")
 range9 = types.KeyboardButton("Cancel")
 
-doe_range_markup.row(range1, range2, range3, range4)
-doe_range_markup.row(range5, range6, range7, range8)
-doe_range_markup.row(range9)
+doeRangeMarkup.row(range1, range2, range3, range4)
+doeRangeMarkup.row(range5, range6, range7, range8)
+doeRangeMarkup.row(range9)
 
 
 
@@ -94,3 +94,5 @@ greekMarkup.row(greek5)
 greekMarkup.row(greek6)
 
 
+
+strikeRange = types.ReplyKeyboardMarkup(one_time_keyboard=True)

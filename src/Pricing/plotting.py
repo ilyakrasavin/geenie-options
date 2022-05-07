@@ -230,9 +230,6 @@ class PlottingHelper:
         # Exact + Args: date in Y-M-D format
         # Chosen by a user from the menu list
 
-        # TODO:
-        # Transform into data request instead of plotting
-
         if (mode == 'exact') and (args != 0):
             
             for each in expirations_all:
@@ -298,30 +295,30 @@ class PlottingHelper:
         return not (self.isThirdFriday(doe_string))
 
 
-
+# Main Plotting Facility Class
 class PlottingMain:
 
     # Plots specified metrics for ATM options of Given Expiration Dates
-    # 
+
     # Expected Input:
-    # o_type: Contract Type: C / P / C & P
-    # DOE Type: Exact, Range, Quarterly, Weeklies + ARGS in a LIST
+    # o_type: Contract Type: C / P / B (for C & P)
+    # DOE Type: Exact, Range, Quarterly, Weeklies + ARGS as a LIST
     # metric: string
-    
-    # Retrieve ATM data as the first element in [Type][ITM = True]
+    # atm_price: as float
 
     def plotDoeATM(ticker, o_type, doe_type, metric, atm_price):
 
         # Helper Instance Initialized
         plotHelper = PlottingHelper()
 
-        # GET THE X AXIS
         axis_type, axis_range = doe_type
 
+        # Get X axis
         doe_axis = plotHelper.getDoeAxis(ticker, axis_type, axis_range)
 
         data_axis = dict()
 
+        # Retrieve data from the latest file of a corresponding Expiration Date
         for each in doe_axis:
 
             indir = '../../Data/' + ticker + '/' + str(each.year) + '-' + str(each.month) + '-' + str(each.day) + '/'
@@ -337,16 +334,21 @@ class PlottingMain:
 
             data_axis[str(each.year) + '-' + str(each.month) + '-' + str(each.day)] = data
 
+        # Construct Both axes
         list_axis = []
         list_values = []
         
-        for each1 in [str(each.year) + '-' + str(each.month) + '-' + str(each.day) for each in doe_axis]:
+        # Check for missing data values
+        # Select the ones that are present
+        for doe_data_idx in [str(each.year) + '-' + str(each.month) + '-' + str(each.day) for each in doe_axis]:
 
             # Handling empty lists of values
-            if(len(data_axis[each1].values) != 0):
-                list_axis.append(each1)
-                list_values.append(data_axis[each1].iloc[0])
+            if(len(data_axis[doe_data_idx].values) != 0):
+                list_axis.append(doe_data_idx)
+                list_values.append(data_axis[doe_data_idx].iloc[0])
 
+
+        # Produce the plot
         plt.figure(figsize = (60, 10))
         plt.plot(list_axis, list_values)
 
@@ -359,33 +361,32 @@ class PlottingMain:
 
         plt.savefig('../../Images/' + imagename + '.jpeg', dpi = 'figure', bbox_inches='tight')
 
+        # Print is captured by the Bot (Should be made a return statement for autonomous functioning)
         print(imagename + '.jpeg')
+
 
 
     # Plots Multiple Curves (Different Expiration Dates) for the specified strike range
     def plotDoeStrike(ticker, o_type, strike_range, doe_mode, metric):
 
-        # Get DOE axes (Used for data retrieval)
-
         plottingHelper = PlottingHelper()
 
-        # mode and arguments
+        doe_mode = doe_mode[0] 
+        doe_args = doe_mode[1]
 
-        kekos = doe_mode[0] 
-        kokos = doe_mode[1]
-
-        doe_axis = plottingHelper.getDoeAxis(ticker, kekos, kokos)
+        # Get DOE axes (Used for data retrieval)
+        doe_axis = plottingHelper.getDoeAxis(ticker, doe_mode, doe_args)
 
         # Retrieve the Strike_range Axis / values for the chosen option type
-
         data_axis = dict()
 
         strike_axis_ticks = []
 
         # Traverse the expiration axis
-        
+
         data_strikes = dict()
 
+        # Retrieve Data for Each expiration (Bounded by Strike ranges)
         for each in doe_axis:
 
             indir = '../../Data/' + ticker + '/' + str(each.year) + '-' + str(each.month) + '-' + str(each.day) + '/'
@@ -407,13 +408,11 @@ class PlottingMain:
 
 
 
-        list_axis = []
-        list_values = []
+        # Produce the plots
 
         i = 0
 
         plt.figure(figsize = (50, 20))
-
 
         # For each expiration
         for each1 in [str(each.year) + '-' + str(each.month) + '-' + str(each.day) for each in doe_axis]:
