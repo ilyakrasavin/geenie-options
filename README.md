@@ -1,6 +1,7 @@
 # Geenie-Digest
 
-# What is it?
+Geenie produces charts and pulls useful information from the vast derivatives market. All at your request.
+
 
 ANIMATED DEMO:
 
@@ -9,9 +10,20 @@ Static Screens (4 total)
 
 What kind of requests can be made?
 
+ATM x DOE (Range, Exact Date, 
+
 Examples of plots Produced:
 ATM * DOE
 Strike Range * DOE
+
+
+
+| <img src="Demo_Assets/animated.gif" width=140 height = 120 vspace = 20/> |   <img src="Demo_Assets/" width=140 height = 120 hspace = 10/>|  <img src="Demo_Assets/" width=140 height=120 hspace = 10/> |  <img src="Demo_Assets/" width=140 height=120 hspace = 10 vspace = 50/>|
+|:--:| :--:| :--:| :--:|
+| Amenity Densities | Food Chains | Path Example | Sample Suggestions |
+
+
+
 
 (LINK )See interaction tree =>
 
@@ -54,3 +66,4 @@ Stats Feature is in development
 
 Logger Functionality
 Error Classes
+

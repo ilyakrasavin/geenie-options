@@ -77,7 +77,6 @@ doeRangeMarkup.row(range5, range6, range7, range8)
 doeRangeMarkup.row(range9)
 
 
-
 greekMarkup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
 greek1 = types.KeyboardButton("Delta")
 greek2 = types.KeyboardButton("Gamma")
