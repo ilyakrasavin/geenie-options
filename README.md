@@ -3,7 +3,7 @@
 Geenie produces charts and pulls useful information from the vast derivatives market. All at your request.
 
 
-| <img src="Demo_Assets/static_screens.png" width=640 height = 640 hspace = 5/> | <img src="Demo_Assets/animated.gif" width=320 height = 640 vspace = 20 hspace = 5/> |
+| <img src="Demo_Assets/static_screens.png" width=640 height = 580 hspace = 5/> | <img src="Demo_Assets/animated.gif" width=320 height = 580 vspace = 20 hspace = 5/> |
 |:--:| :--:|
 | Menu Screens | Preview |
 
