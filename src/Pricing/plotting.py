@@ -349,11 +349,11 @@ class PlottingMain:
 
 
         # Produce the plot
-        plt.figure(figsize = (60, 10))
+        plt.figure(figsize = (40, 20))
         plt.plot(list_axis, list_values)
 
-        plt.rc('xtick', labelsize=20) 
-        plt.rc('ytick', labelsize=20)
+        plt.rc('xtick', labelsize=35) 
+        plt.rc('ytick', labelsize=35)
 
         plt.legend([metric], fontsize = 35)
 

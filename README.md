@@ -9,24 +9,19 @@ Static Screens (4 total)
 
 
 What kind of requests can be made?
-
-ATM x DOE (Range, Exact Date, 
-
-Examples of plots Produced:
-ATM * DOE
-Strike Range * DOE
+- Examples by Mode:
 
 
-
-| <img src="Demo_Assets/animated.gif" width=320 height = 740 vspace = 20/> |   <img src="Demo_Assets/" width=140 height = 120 hspace = 10/>|  <img src="Demo_Assets/" width=140 height=120 hspace = 10/> |  <img src="Demo_Assets/" width=140 height=120 hspace = 10 vspace = 50/>|
-|:--:| :--:| :--:| :--:|
-| Amenity Densities | Food Chains | Path Example | Sample Suggestions |
+ATM x DOE (Range, Exact Date, Weeklys, Quarterlys / Regular)
+Strike Range * DOE (Strike Range * # of DOE curves)
 
 
+| <img src="Demo_Assets/animated.gif" width=320 height = 680 vspace = 20/> |   <img src="Demo_Assets/static_screens.png" width=640 height = 680 hspace = 10/>|
+|:--:| :--:|
+| Amenity Densities | Food Chains |
 
 
-(LINK )See interaction tree =>
-
+(LINK) See interaction tree
 
 # Technical Overview:
 
@@ -46,7 +41,8 @@ Strike Range * DOE
 </pre>
 ## The bot
 
-Request/Interaction Tree
+
+- Request/Interaction Tree
 
 - Data Retrieval & Dataset Construction
 
@@ -55,6 +51,8 @@ Request/Interaction Tree
 
 ## ISSUES/Bugs:
 
+- Image / Font Scaling (Especially for ATM x DOE mode)
+- 
 
 ## What is next?
 
@@ -67,3 +65,4 @@ Stats Feature is in development
 Logger Functionality
 Error Classes
 
+Issues
