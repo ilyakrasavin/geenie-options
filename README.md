@@ -18,7 +18,7 @@ Strike Range * DOE
 
 
 
-| <img src="Demo_Assets/animated.gif" width=140 height = 120 vspace = 20/> |   <img src="Demo_Assets/" width=140 height = 120 hspace = 10/>|  <img src="Demo_Assets/" width=140 height=120 hspace = 10/> |  <img src="Demo_Assets/" width=140 height=120 hspace = 10 vspace = 50/>|
+| <img src="Demo_Assets/animated.gif" width=320 height = 740 vspace = 20/> |   <img src="Demo_Assets/" width=140 height = 120 hspace = 10/>|  <img src="Demo_Assets/" width=140 height=120 hspace = 10/> |  <img src="Demo_Assets/" width=140 height=120 hspace = 10 vspace = 50/>|
 |:--:| :--:| :--:| :--:|
 | Amenity Densities | Food Chains | Path Example | Sample Suggestions |
 
