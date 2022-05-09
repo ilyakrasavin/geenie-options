@@ -42,6 +42,12 @@ ADD DESCRIPTIONS<br>
 
 ## Running the Bot
 
+### Setting Up Virtual Environment
+
+### Installing Dependencies
+
+### Telegram Setup
+
 ## Architecture
 
 - Request/Interaction Tree
