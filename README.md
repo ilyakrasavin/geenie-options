@@ -3,23 +3,23 @@
 Geenie produces charts and pulls useful information from the vast derivatives market. All at your request.
 
 
-ANIMATED DEMO:
+| <img src="Demo_Assets/static_screens.png" width=640 height = 680 hspace = 5/> | <img src="Demo_Assets/animated.gif" width=320 height = 680 vspace = 20/> |
+|:--:| :--:|
+| Menu Screens | Preview |
 
-Static Screens (4 total)
 
-
-What kind of requests can be made?
+### What kind of requests can be made?
 - Examples by Mode:
 
+#### Strike Range * DOE (Strike Range * # of DOE curves)
+ADD DESCRIPTIONS<br>
+<img src="Demo_Assets/SPY-px-range-1y.jpeg" width=1024 height = 400 hspace = 5/>
+<img src="Demo_Assets/AAPL-iv-range-all.jpeg" width=1024 height = 400 hspace = 5/>
 
-ATM x DOE (Range, Exact Date, Weeklys, Quarterlys / Regular)
-Strike Range * DOE (Strike Range * # of DOE curves)
-
-
-| <img src="Demo_Assets/animated.gif" width=320 height = 680 vspace = 20/> |   <img src="Demo_Assets/static_screens.png" width=640 height = 680 hspace = 10/>|
-|:--:| :--:|
-| Amenity Densities | Food Chains |
-
+#### ATM x DOE (Range, Exact Date, Weeklys, Quarterlys / Regular)
+ADD DESCRIPTIONS<br>
+<img src="Demo_Assets/F-ATM-3m-OI.jpeg" width=720 height = 300 hspace = 5/>
+<img src="Demo_Assets/TWTR-ATM-Weekly-Vol.jpeg" width=720 height = 300 hspace = 5/>
 
 (LINK) See interaction tree
 
@@ -39,14 +39,16 @@ Strike Range * DOE (Strike Range * # of DOE curves)
 └── venv
 
 </pre>
-## The bot
 
+## Running the Bot
+
+## Architecture
 
 - Request/Interaction Tree
 
 - Data Retrieval & Dataset Construction
 
--  Option Pricing
+- Option Pricing
 
 
 ## ISSUES/Bugs:
